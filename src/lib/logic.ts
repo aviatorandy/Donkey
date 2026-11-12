@@ -1,4 +1,4 @@
-import type { Db, Person } from './types'
+import type { Db, Interaction, Person, Tier } from './types'
 
 export const pad = (n: number) => String(n).padStart(2, '0')
 export const ymd = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
@@ -58,7 +58,9 @@ export function daysToBirthday(birthday: string | undefined, now: string): numbe
 
 export interface Suggestion {
   person: Person
-  kind: 'birthday' | 'catch-up'
+  kind: 'birthday' | 'date' | 'catch-up'
+  /** For kind 'date': what the date is. */
+  label?: string
   reason: string
   /** Higher sorts first. */
   score: number
@@ -68,13 +70,19 @@ export function suggestions(db: Db, now: string): Suggestion[] {
   const last = lastContactMap(db)
   const out: Suggestion[] = []
   for (const p of db.people) {
-    const b = daysToBirthday(p.birthday, now)
-    if (b !== undefined && b <= 14) {
+    const events = [...(p.birthday ? [{ label: 'Birthday', date: p.birthday }] : []), ...(p.dates ?? [])]
+    let soon: { label: string; d: number } | undefined
+    for (const e of events) {
+      const d = daysToBirthday(e.date, now)
+      if (d !== undefined && d <= 14 && (!soon || d < soon.d)) soon = { label: e.label, d }
+    }
+    if (soon) {
       out.push({
         person: p,
-        kind: 'birthday',
-        reason: b === 0 ? 'Birthday today' : `Birthday in ${b} day${b === 1 ? '' : 's'}`,
-        score: 1000 - b,
+        kind: soon.label === 'Birthday' ? 'birthday' : 'date',
+        label: soon.label,
+        reason: soon.d === 0 ? `${soon.label} today` : `${soon.label} in ${soon.d} day${soon.d === 1 ? '' : 's'}`,
+        score: 1000 - soon.d,
       })
       continue
     }
@@ -99,6 +107,7 @@ export function suggestions(db: Db, now: string): Suggestion[] {
 export function draftMessage(s: Suggestion): string {
   const name = firstName(s.person)
   if (s.kind === 'birthday') return `Happy birthday, ${name}! Hope it's a great one.`
+  if (s.kind === 'date') return `Hey ${name}, thinking of you with ${(s.label ?? 'the big day').toLowerCase()} coming up.`
   return s.person.circle === 'business' || s.person.circle === 'client'
     ? `Hi ${name}, it's been a while. Would love to hear what you're working on. Up for a quick catch-up?`
     : `Hey ${name}! It's been too long. How have you been?`
@@ -118,7 +127,7 @@ export function sendLinks(p: Person, text: string): { label: string; href: strin
 
 export function matchesQuery(p: Person, q: string): boolean {
   if (!q.trim()) return true
-  const hay = [p.name, p.company, p.title, p.context, p.circle, ...p.tags, ...p.facts]
+  const hay = [p.name, p.company, p.title, p.context, p.circle, tierLabel(p.tier), ...p.tags, ...p.facts]
     .filter(Boolean)
     .join(' ')
     .toLowerCase()
@@ -127,4 +136,50 @@ export function matchesQuery(p: Person, q: string): boolean {
     .split(/\s+/)
     .filter(Boolean)
     .every((t) => hay.includes(t))
+}
+
+export const TIERS: { id: Tier; label: string; hint: string; cadenceDays?: number }[] = [
+  { id: 'inner', label: 'Inner circle', hint: 'every 2 weeks', cadenceDays: 14 },
+  { id: 'warm', label: 'Warm', hint: 'every 2 months', cadenceDays: 60 },
+  { id: 'alive', label: 'Keep alive', hint: 'once a year', cadenceDays: 365 },
+  { id: 'dormant', label: 'Dormant', hint: 'no nudges' },
+]
+export function tierLabel(t?: Tier): string {
+  return TIERS.find((x) => x.id === t)?.label ?? 'Unsorted'
+}
+/** Moving someone to a tier resets their contact goal to that tier's default. */
+export function withTier(p: Person, tier: Tier): Person {
+  return { ...p, tier, cadenceDays: TIERS.find((x) => x.id === tier)?.cadenceDays }
+}
+
+/**
+ * Guess a tier from what is already known, so sorting an import is one click.
+ * Family and heavy message history are inner circle; any real signal is warm;
+ * a little history is keep-alive; a bare contact is dormant.
+ */
+export function suggestTier(p: Person, mine: Interaction[]): Tier {
+  const msgs = mine.reduce((n, i) => n + (i.count ?? 0), 0)
+  const logged = mine.filter((i) => i.count === undefined).length
+  if (p.circle === 'family' || msgs >= 200 || logged >= 5) return 'inner'
+  if (p.circle === 'client' || msgs >= 20 || logged > 0 || p.facts.length > 0) return 'warm'
+  if (mine.length > 0) return 'alive'
+  return 'dormant'
+}
+export function suggestTiers(db: Db): Map<string, Tier> {
+  const by = new Map<string, Interaction[]>()
+  for (const i of db.interactions) by.set(i.personId, [...(by.get(i.personId) ?? []), i])
+  return new Map(db.people.map((p) => [p.id, suggestTier(p, by.get(p.id) ?? [])]))
+}
+
+export function tierHealth(db: Db, now: string): { tier: Tier; label: string; total: number; overdue: number }[] {
+  const last = lastContactMap(db)
+  return TIERS.filter((t) => t.cadenceDays).map((t) => {
+    const people = db.people.filter((p) => p.tier === t.id)
+    return {
+      tier: t.id,
+      label: t.label,
+      total: people.length,
+      overdue: people.filter((p) => statusOf(p, last.get(p.id), now) === 'overdue').length,
+    }
+  })
 }

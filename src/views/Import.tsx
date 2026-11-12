@@ -91,6 +91,17 @@ export default function Import() {
             <button onClick={backup}>Download backup</button>
             <FileButton accept=".json,application/json" onText={restore} />
           </div>
+          <button
+            className="danger"
+            onClick={() => {
+              if (confirm('Permanently delete everything in Donkey on this device?')) {
+                update(() => emptyDb)
+                say('backup', 'Everything was deleted from this browser.')
+              }
+            }}
+          >
+            Delete all my data
+          </button>
           <p>{msg.backup}</p>
         </div>
       </section>

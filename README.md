@@ -15,6 +15,7 @@ npm run dev
 
 - **Landing page** at `/` with an early-access form. Set `VITE_SIGNUP_ENDPOINT` (see `.env.example`) to collect sign-ups. The app is at `/app/`.
 - **Today**: who to reach out to (birthdays, then most overdue against the goal you set), with an editable draft that opens in iMessage, WhatsApp, or email. Plus reminders.
+- **Sort**: put everyone in a tier (inner circle, warm, keep alive, dormant). Donkey suggests a tier from what it already knows, so a big import is sorted in one click.
 - **People**: search across names, companies, tags, and notes. Filter by circle (friend, family, business, client) or by chapter (a company or "how you know them").
 - **Map**: everyone grouped by chapter, company, or circle, coloured by whether you are on track.
 - **Import**: phone contacts (.vcf), LinkedIn `Connections.csv`, WhatsApp chat exports, and iMessage history via `scripts/export_imessage.py` (Mac).

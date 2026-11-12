@@ -116,3 +116,43 @@ describe('logic', () => {
     expect(matchesQuery(p, 'marathon globex')).toBe(false)
   })
 })
+
+import { suggestTier, tierHealth, withTier } from '../src/lib/logic'
+
+describe('tiers', () => {
+  const msg = (count: number) => ({ id: 'm', personId: 'p1', date: '2024-11-01', channel: 'imessage' as const, note: '', count })
+  const logged = { id: 'l', personId: 'p1', date: '2024-11-01', channel: 'call' as const, note: '' }
+
+  it('suggests a tier from existing signals', () => {
+    expect(suggestTier(person({ circle: 'family' }), [])).toBe('inner')
+    expect(suggestTier(person({}), [msg(250)])).toBe('inner')
+    expect(suggestTier(person({}), [msg(40)])).toBe('warm')
+    expect(suggestTier(person({ facts: ['Likes tea'] }), [])).toBe('warm')
+    expect(suggestTier(person({}), [logged])).toBe('warm')
+    expect(suggestTier(person({}), [msg(3)])).toBe('alive')
+    expect(suggestTier(person({ circle: 'business', tags: ['linkedin'] }), [])).toBe('dormant')
+  })
+
+  it('sets the contact goal from the tier', () => {
+    expect(withTier(person({ cadenceDays: 7 }), 'warm').cadenceDays).toBe(60)
+    expect(withTier(person({ cadenceDays: 7 }), 'dormant').cadenceDays).toBeUndefined()
+  })
+
+  it('reports who is going cold per tier and surfaces important dates', () => {
+    const db: Db = {
+      people: [
+        withTier(person({ id: 'a', name: 'A' }), 'inner'),
+        withTier(person({ id: 'b', name: 'B', dates: [{ label: 'Anniversary', date: '12-04' }] }), 'inner'),
+      ],
+      interactions: [
+        { id: '1', personId: 'a', date: '2024-10-01', channel: 'call', note: '' },
+        { id: '2', personId: 'b', date: '2024-11-29', channel: 'call', note: '' },
+      ],
+      reminders: [],
+    }
+    expect(tierHealth(db, '2024-12-01')[0]).toMatchObject({ tier: 'inner', total: 2, overdue: 1 })
+    const s = suggestions(db, '2024-12-01')
+    expect(s[0]).toMatchObject({ kind: 'date', reason: 'Anniversary in 3 days' })
+    expect(s[0].person.name).toBe('B')
+  })
+})

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useDb, update, uid } from '../lib/store'
-import { addDays, daysBetween, draftMessage, sendLinks, suggestions, today, type Suggestion } from '../lib/logic'
+import { addDays, daysBetween, draftMessage, sendLinks, suggestions, tierHealth, today, type Suggestion } from '../lib/logic'
 import type { Channel } from '../lib/types'
 
 const CHANNEL_FOR: Record<string, Channel> = { iMessage: 'imessage', WhatsApp: 'whatsapp', LinkedIn: 'linkedin', Email: 'email' }
@@ -22,7 +22,7 @@ function SuggestionCard({ s, open }: { s: Suggestion; open: (id: string) => void
         <button className="link name" onClick={() => open(p.id)}>
           {p.name}
         </button>
-        <span className={`pill ${s.kind === 'birthday' ? 'due' : 'overdue'}`}>{s.reason}</span>
+        <span className={`pill ${s.kind === 'catch-up' ? 'overdue' : 'due'}`}>{s.reason}</span>
       </div>
       {p.facts.length > 0 && <p className="muted">Remember: {p.facts.slice(0, 2).join(' · ')}</p>}
       <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} aria-label={`Draft message to ${p.name}`} />
@@ -46,10 +46,54 @@ function SuggestionCard({ s, open }: { s: Suggestion; open: (id: string) => void
   )
 }
 
-export default function Today({ open }: { open: (id: string) => void }) {
+function QuickCapture() {
+  const db = useDb()
+  const [who, setWho] = useState('')
+  const [note, setNote] = useState('')
+  const [saved, setSaved] = useState('')
+  const person = db.people.find((p) => p.name.toLowerCase() === who.trim().toLowerCase())
+  const save = (remember: boolean) => {
+    if (!person || !note.trim()) return
+    const text = note.trim()
+    update((d) => ({
+      ...d,
+      interactions: [...d.interactions, { id: uid(), personId: person.id, date: today(), channel: 'other', note: text }],
+      people: remember ? d.people.map((p) => (p.id === person.id ? { ...p, facts: [...p.facts, text] } : p)) : d.people,
+    }))
+    setSaved(`Saved for ${person.name}.`)
+    setNote('')
+    setWho('')
+  }
+  return (
+    <div className="card">
+      <div className="row">
+        <input className="short-name" list="people-names" placeholder="Who?" value={who} onChange={(e) => setWho(e.target.value)} aria-label="Person" />
+        <datalist id="people-names">
+          {db.people.slice(0, 500).map((p) => (
+            <option key={p.id} value={p.name} />
+          ))}
+        </datalist>
+        <input className="grow" placeholder="Just talked? Jot what you learned" value={note} onChange={(e) => setNote(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && save(true)} aria-label="Note" />
+      </div>
+      <div className="row">
+        <button className="primary" disabled={!person || !note.trim()} onClick={() => save(true)}>
+          Log and remember
+        </button>
+        <button disabled={!person || !note.trim()} onClick={() => save(false)}>
+          Log only
+        </button>
+        <span className="muted">{saved}</span>
+      </div>
+    </div>
+  )
+}
+
+export default function Today({ open, goSort }: { open: (id: string) => void; goSort: () => void }) {
   const db = useDb()
   const now = today()
   const sugg = suggestions(db, now)
+  const health = tierHealth(db, now)
+  const unsorted = db.people.filter((p) => !p.tier).length
   const reminders = db.reminders.filter((r) => !r.done).sort((a, b) => a.due.localeCompare(b.due))
   const [text, setText] = useState('')
   const [due, setDue] = useState(addDays(now, 7))
@@ -65,8 +109,24 @@ export default function Today({ open }: { open: (id: string) => void }) {
   }
 
   return (
+    <>
+      <div className="health">
+        {health.map((h) => (
+          <div key={h.tier} className="card stat">
+            <span className="muted">{h.label}</span>
+            <b>{h.total === 0 ? 'Nobody yet' : h.overdue === 0 ? `All ${h.total} on track` : `${h.overdue} of ${h.total} going cold`}</b>
+          </div>
+        ))}
+        {unsorted > 0 && (
+          <button className="card stat sortcta" onClick={goSort}>
+            <span className="muted">Not sorted yet</span>
+            <b>Sort {unsorted} {unsorted === 1 ? 'person' : 'people'} →</b>
+          </button>
+        )}
+      </div>
     <div className="grid2">
       <section>
+        <QuickCapture />
         <h2>Reach out ({sugg.length})</h2>
         {sugg.length === 0 && <p className="muted">You're caught up. Set a "keep in touch" goal on a person to get nudges.</p>}
         {sugg.slice(0, 12).map((s) => (
@@ -120,5 +180,6 @@ export default function Today({ open }: { open: (id: string) => void }) {
         })}
       </section>
     </div>
+    </>
   )
 }

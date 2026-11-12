@@ -5,11 +5,13 @@ import People from './views/People'
 import PersonDetail from './views/PersonDetail'
 import NetworkMap from './views/NetworkMap'
 import Import from './views/Import'
+import Sort from './views/Sort'
 
-type View = 'today' | 'people' | 'map' | 'import'
+type View = 'today' | 'people' | 'sort' | 'map' | 'import'
 const TABS: { id: View; label: string }[] = [
   { id: 'today', label: 'Today' },
   { id: 'people', label: 'People' },
+  { id: 'sort', label: 'Sort' },
   { id: 'map', label: 'Map' },
   { id: 'import', label: 'Import' },
 ]
@@ -19,6 +21,7 @@ export default function App() {
   const [view, setView] = useState<View>('today')
   const [personId, setPersonId] = useState<string | null>(null)
   const person = db.people.find((p) => p.id === personId)
+  const unsorted = db.people.filter((p) => !p.tier).length
   const go = (v: View) => {
     setPersonId(null)
     setView(v)
@@ -35,6 +38,7 @@ export default function App() {
           {TABS.map((t) => (
             <button key={t.id} className={!person && view === t.id ? 'tab active' : 'tab'} onClick={() => go(t.id)}>
               {t.label}
+              {t.id === 'sort' && unsorted > 0 ? ` (${unsorted})` : ''}
             </button>
           ))}
         </nav>
@@ -54,9 +58,11 @@ export default function App() {
             </div>
           </div>
         ) : view === 'today' ? (
-          <Today open={setPersonId} />
+          <Today open={setPersonId} goSort={() => go('sort')} />
         ) : view === 'people' ? (
           <People open={setPersonId} />
+        ) : view === 'sort' ? (
+          <Sort open={setPersonId} />
         ) : view === 'map' ? (
           <NetworkMap open={setPersonId} />
         ) : (

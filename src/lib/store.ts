@@ -47,14 +47,14 @@ export function sampleDb(): Db {
   })
   return {
     people: [
-      p('s1', { name: 'Maya Chen', circle: 'friend', context: 'College', phone: '+14155550101', cadenceDays: 30, birthday: bday, facts: ['Training for her first marathon', 'Daughter Lily started kindergarten'] }),
-      p('s2', { name: 'Jordan Reyes', circle: 'friend', context: 'College', phone: '+14155550102', cadenceDays: 45, facts: ['Just moved to Austin', 'Allergic to shellfish'] }),
-      p('s3', { name: 'Priya Natarajan', circle: 'business', company: 'Northwind', title: 'VP Operations', context: 'Northwind 2019-2022', cadenceDays: 90, tags: ['mentor'], facts: ['Prefers coffee over lunch', 'Hiring for a chief of staff'] }),
-      p('s4', { name: 'Sam Okafor', circle: 'business', company: 'Northwind', title: 'Finance Lead', context: 'Northwind 2019-2022', cadenceDays: 120 }),
-      p('s5', { name: 'Elena Rossi', circle: 'client', company: 'Brightline', title: 'COO', context: 'Consulting 2023', email: 'elena@example.com', cadenceDays: 60, tags: ['referral source'], facts: ['Renewal conversation due in Q1', 'Big Formula 1 fan'] }),
-      p('s6', { name: 'Tom Becker', circle: 'client', company: 'Brightline', title: 'Head of Supply Chain', context: 'Consulting 2023', cadenceDays: 90 }),
-      p('s7', { name: 'Aisha Khan', circle: 'business', company: 'Lumen Labs', title: 'Recruiter', context: 'Job search', cadenceDays: 30, tags: ['recruiter'], facts: ['Said ops roles open up in January'] }),
-      p('s8', { name: 'Dad', circle: 'family', context: 'Family', phone: '+14155550108', cadenceDays: 7, facts: ['Knee surgery follow-up on the 20th'] }),
+      p('s1', { tier: 'warm', name: 'Maya Chen', circle: 'friend', context: 'College', phone: '+14155550101', cadenceDays: 30, birthday: bday, facts: ['Training for her first marathon', 'Daughter Lily started kindergarten'] }),
+      p('s2', { tier: 'warm', name: 'Jordan Reyes', circle: 'friend', context: 'College', phone: '+14155550102', cadenceDays: 45, facts: ['Just moved to Austin', 'Allergic to shellfish'] }),
+      p('s3', { tier: 'warm', name: 'Priya Natarajan', circle: 'business', company: 'Northwind', title: 'VP Operations', context: 'Northwind 2019-2022', cadenceDays: 90, tags: ['mentor'], facts: ['Prefers coffee over lunch', 'Hiring for a chief of staff'] }),
+      p('s4', { tier: 'alive', name: 'Sam Okafor', circle: 'business', company: 'Northwind', title: 'Finance Lead', context: 'Northwind 2019-2022', cadenceDays: 120 }),
+      p('s5', { tier: 'warm', name: 'Elena Rossi', circle: 'client', company: 'Brightline', title: 'COO', context: 'Consulting 2023', email: 'elena@example.com', cadenceDays: 60, tags: ['referral source'], facts: ['Renewal conversation due in Q1', 'Big Formula 1 fan'] }),
+      p('s6', { tier: 'alive', name: 'Tom Becker', circle: 'client', company: 'Brightline', title: 'Head of Supply Chain', context: 'Consulting 2023', cadenceDays: 90 }),
+      p('s7', { tier: 'warm', name: 'Aisha Khan', circle: 'business', company: 'Lumen Labs', title: 'Recruiter', context: 'Job search', cadenceDays: 30, tags: ['recruiter'], facts: ['Said ops roles open up in January'] }),
+      p('s8', { tier: 'inner', name: 'Dad', circle: 'family', context: 'Family', phone: '+14155550108', cadenceDays: 7, facts: ['Knee surgery follow-up on the 20th'], dates: [{ label: "Mum and Dad's anniversary", date: addDays(t, 9).slice(5) }] }),
       p('s9', { name: 'Chris Lindgren', circle: 'business', company: 'Lumen Labs', title: 'Director, Biz Ops', context: 'Job search' }),
     ],
     interactions: [

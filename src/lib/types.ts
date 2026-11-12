@@ -1,4 +1,6 @@
 export type Circle = 'friend' | 'family' | 'business' | 'client'
+/** How close you want to keep someone. Unset means not sorted yet. */
+export type Tier = 'inner' | 'warm' | 'alive' | 'dormant'
 export type Channel = 'imessage' | 'whatsapp' | 'linkedin' | 'email' | 'call' | 'in-person' | 'other'
 
 export interface Person {
@@ -14,6 +16,9 @@ export interface Person {
   linkedin?: string
   /** MM-DD or YYYY-MM-DD */
   birthday?: string
+  tier?: Tier
+  /** Other dates worth remembering: anniversaries, kids' birthdays. Dates are MM-DD. */
+  dates?: { label: string; date: string }[]
   /** Target days between touchpoints. Unset means no nudges. */
   cadenceDays?: number
   tags: string[]
@@ -28,6 +33,8 @@ export interface Interaction {
   date: string
   channel: Channel
   note: string
+  /** Set on imported message summaries: how many messages they cover. */
+  count?: number
 }
 
 export interface Reminder {

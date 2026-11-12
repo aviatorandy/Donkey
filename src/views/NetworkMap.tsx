@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useDb } from '../lib/store'
-import { lastContactMap, statusOf, today } from '../lib/logic'
+import { lastContactMap, statusOf, tierLabel, today } from '../lib/logic'
 import type { Person } from '../lib/types'
 
-type GroupBy = 'context' | 'company' | 'circle'
+type GroupBy = 'tier' | 'context' | 'company' | 'circle'
 const MAX_GROUPS = 11
 const MAX_DOTS = 90
 const CELL_W = 300
@@ -12,14 +12,14 @@ const GOLDEN = Math.PI * (3 - Math.sqrt(5))
 
 export default function NetworkMap({ open }: { open: (id: string) => void }) {
   const db = useDb()
-  const [by, setBy] = useState<GroupBy>('context')
+  const [by, setBy] = useState<GroupBy>('tier')
   const now = today()
   const last = useMemo(() => lastContactMap(db), [db])
 
   const groups = useMemo(() => {
     const m = new Map<string, Person[]>()
     for (const p of db.people) {
-      const k = (by === 'context' ? p.context || p.company : p[by]) || 'Unsorted'
+      const k = (by === 'tier' ? tierLabel(p.tier) : by === 'context' ? p.context || p.company : p[by]) || 'Unsorted'
       m.set(k, [...(m.get(k) ?? []), p])
     }
     const sorted = [...m.entries()].sort((a, b) => b[1].length - a[1].length)
@@ -37,7 +37,7 @@ export default function NetworkMap({ open }: { open: (id: string) => void }) {
       <div className="row between">
         <div className="row">
           <span className="muted">Group by</span>
-          {(['context', 'company', 'circle'] as GroupBy[]).map((g) => (
+          {(['tier', 'context', 'company', 'circle'] as GroupBy[]).map((g) => (
             <button key={g} className={by === g ? 'tab active' : 'tab'} onClick={() => setBy(g)}>
               {g === 'context' ? 'how you know them' : g}
             </button>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useDb, update, uid } from '../lib/store'
-import { addDays, today } from '../lib/logic'
-import type { Channel, Circle, Person } from '../lib/types'
+import { addDays, TIERS, today, withTier } from '../lib/logic'
+import type { Channel, Circle, Person, Tier } from '../lib/types'
 import { CIRCLES } from './People'
 
 const CHANNELS: Channel[] = ['imessage', 'whatsapp', 'linkedin', 'email', 'call', 'in-person', 'other']
@@ -36,6 +36,15 @@ export default function PersonDetail({ person: p, onBack }: { person: Person; on
   const [date, setDate] = useState(today())
   const [rem, setRem] = useState('')
   const [remDue, setRemDue] = useState(addDays(today(), 7))
+  const [dLabel, setDLabel] = useState('')
+  const [dDate, setDDate] = useState('')
+  const dates = p.dates ?? []
+  const addDate = () => {
+    if (!dLabel.trim() || !/^\d{2}-\d{2}$/.test(dDate)) return
+    patch(p.id, { dates: [...dates, { label: dLabel.trim(), date: dDate }] })
+    setDLabel('')
+    setDDate('')
+  }
   const set = (k: keyof Person) => (v: string) => patch(p.id, { [k]: v || undefined })
   const timeline = db.interactions.filter((i) => i.personId === p.id).sort((a, b) => b.date.localeCompare(a.date))
   const reminders = db.reminders.filter((r) => r.personId === p.id && !r.done)
@@ -127,6 +136,20 @@ export default function PersonDetail({ person: p, onBack }: { person: Person; on
           <h2>Details</h2>
           <div className="card fields">
             <label className="field">
+              <span>Tier</span>
+              <select
+                value={p.tier ?? ''}
+                onChange={(e) => patch(p.id, e.target.value ? withTier(p, e.target.value as Tier) : { tier: undefined })}
+              >
+                <option value="">Not sorted yet</option>
+                {TIERS.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.label} ({t.hint})
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
               <span>Circle</span>
               <select value={p.circle} onChange={(e) => patch(p.id, { circle: e.target.value as Circle })}>
                 {CIRCLES.map((c) => (
@@ -156,6 +179,25 @@ export default function PersonDetail({ person: p, onBack }: { person: Person; on
               value={p.tags.join(', ')}
               onChange={(v) => patch(p.id, { tags: v.split(',').map((t) => t.trimStart()).filter((t, i, a) => t || i === a.length - 1) })}
             />
+          </div>
+
+          <h2>Important dates</h2>
+          <div className="card">
+            {dates.length === 0 && <p className="muted">Anniversaries, kids' birthdays, anything you should not miss.</p>}
+            {dates.map((d, i) => (
+              <div key={i} className="row">
+                <span className="grow">{d.label}</span>
+                <span className="muted">{d.date}</span>
+                <button className="link" aria-label={`Remove: ${d.label}`} onClick={() => patch(p.id, { dates: dates.filter((_, j) => j !== i) })}>
+                  ×
+                </button>
+              </div>
+            ))}
+            <div className="row">
+              <input className="grow" placeholder="e.g. Anniversary" value={dLabel} onChange={(e) => setDLabel(e.target.value)} />
+              <input className="short" placeholder="MM-DD" value={dDate} onChange={(e) => setDDate(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addDate()} aria-label="Date as MM-DD" />
+              <button onClick={addDate}>Add</button>
+            </div>
           </div>
 
           <h2>Reminders</h2>

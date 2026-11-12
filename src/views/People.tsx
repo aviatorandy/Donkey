@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useDb, update, uid } from '../lib/store'
-import { daysBetween, lastContactMap, matchesQuery, statusOf, today } from '../lib/logic'
+import { daysBetween, lastContactMap, matchesQuery, statusOf, tierLabel, TIERS, today } from '../lib/logic'
 import type { Circle } from '../lib/types'
 
 export const CIRCLES: Circle[] = ['friend', 'family', 'business', 'client']
@@ -10,6 +10,7 @@ export default function People({ open }: { open: (id: string) => void }) {
   const [q, setQ] = useState('')
   const [circle, setCircle] = useState<Circle | ''>('')
   const [group, setGroup] = useState('')
+  const [tier, setTier] = useState('')
   const now = today()
   const last = useMemo(() => lastContactMap(db), [db])
 
@@ -22,7 +23,7 @@ export default function People({ open }: { open: (id: string) => void }) {
   }, [db.people])
 
   const rows = db.people
-    .filter((p) => (!circle || p.circle === circle) && (!group || p.company === group || p.context === group) && matchesQuery(p, q))
+    .filter((p) => (!tier || (p.tier ?? 'none') === tier) && (!circle || p.circle === circle) && (!group || p.company === group || p.context === group) && matchesQuery(p, q))
     .sort((a, b) => a.name.localeCompare(b.name))
 
   const add = () => {
@@ -35,6 +36,15 @@ export default function People({ open }: { open: (id: string) => void }) {
     <section>
       <div className="row">
         <input className="grow" placeholder="Search names, companies, tags, and the small things..." value={q} onChange={(e) => setQ(e.target.value)} />
+        <select value={tier} onChange={(e) => setTier(e.target.value)} aria-label="Tier">
+          <option value="">All tiers</option>
+          {TIERS.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.label}
+            </option>
+          ))}
+          <option value="none">Unsorted</option>
+        </select>
         <select value={circle} onChange={(e) => setCircle(e.target.value as Circle | '')} aria-label="Circle">
           <option value="">All circles</option>
           {CIRCLES.map((c) => (
@@ -63,7 +73,7 @@ export default function People({ open }: { open: (id: string) => void }) {
               <span className={`dot ${st}`} />
               <span className="name">{p.name}</span>
               <span className="muted">{[p.title, p.company].filter(Boolean).join(', ') || p.context || ''}</span>
-              <span className="pill none">{p.circle}</span>
+              <span className="pill none">{tierLabel(p.tier)}</span>
               <span className="muted right">{l ? `${daysBetween(l, now)}d ago` : 'no contact logged'}</span>
             </button>
           )

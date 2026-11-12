@@ -205,6 +205,7 @@ export function applyWhatsApp(
       date: c.last,
       channel: 'whatsapp',
       note: `WhatsApp import: ${c.count} messages from them, latest on this date`,
+      count: c.count,
     })
   }
   return { db: { ...db, interactions }, matched, unmatched }
@@ -230,6 +231,7 @@ export function applyIMessage(
       date: r.last,
       channel: 'imessage',
       note: `iMessage import: ${r.total} messages (${r.sent} from you), latest on this date`,
+      count: r.total,
     })
   }
   unmatched.sort((a, b) => b.total - a.total)
