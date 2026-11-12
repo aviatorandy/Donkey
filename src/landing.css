@@ -11,9 +11,11 @@ body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.55 sys
 a { color: var(--accent); }
 .top, main { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
 .top { display: flex; justify-content: space-between; align-items: center; padding-top: 20px; padding-bottom: 20px; }
-.logo { font-size: 20px; letter-spacing: -0.02em; }
+.logo { font-size: 20px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+.eyebrow { color: var(--accent); font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 12px; }
+.avatar { border-radius: 50%; }
 .hero { display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; align-items: center; padding: 56px 0 72px; }
-h1 { font-size: clamp(34px, 5vw, 52px); line-height: 1.08; letter-spacing: -0.03em; margin: 0 0 18px; text-wrap: balance; }
+h1 { font-size: clamp(32px, 4.4vw, 46px); line-height: 1.08; letter-spacing: -0.03em; margin: 0 0 18px; text-wrap: balance; }
 .lede { color: var(--muted); font-size: 19px; margin: 0 0 26px; max-width: 30em; }
 #signup { display: flex; gap: 8px; flex-wrap: wrap; }
 #signup input { flex: 1; min-width: 200px; font: inherit; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: inherit; }
@@ -21,8 +23,8 @@ h1 { font-size: clamp(34px, 5vw, 52px); line-height: 1.08; letter-spacing: -0.03
 #signup button:disabled { opacity: 0.6; }
 .status { min-height: 1.5em; font-size: 14px; color: var(--muted); margin: 10px 0 0; }
 .preview { display: grid; gap: 12px; }
-.pcard { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; font-size: 14px; box-shadow: 0 8px 24px rgb(0 0 0 / 0.06); }
-.pcard:nth-child(2) { margin-left: 28px; }
+.pcard { background: var(--card); border: 1px solid var(--line); border-radius: 4px 14px 14px 14px; padding: 16px; font-size: 14px; box-shadow: 0 8px 24px rgb(0 0 0 / 0.06); }
+.preview .pcard { margin-left: 28px; }
 .pcard p { margin: 8px 0; }
 .prow { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
 .prow.start { justify-content: flex-start; }
@@ -41,5 +43,5 @@ h2 { font-size: 30px; letter-spacing: -0.02em; margin: 0 0 12px; }
 @media (max-width: 780px) {
   .hero { grid-template-columns: 1fr; gap: 32px; padding: 32px 0 48px; }
   .features { grid-template-columns: 1fr; }
-  .pcard:nth-child(2) { margin-left: 0; }
+  .preview .pcard { margin-left: 0; }
 }

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Donkey">
+  <circle cx="60" cy="60" r="60" fill="#dfe9e3"/>
+  <g transform="rotate(-16 40 34)">
+    <ellipse cx="40" cy="30" rx="10" ry="25" fill="#8a8178"/>
+    <ellipse cx="40" cy="32" rx="5" ry="17" fill="#eac8b6"/>
+  </g>
+  <g transform="rotate(16 80 34)">
+    <ellipse cx="80" cy="30" rx="10" ry="25" fill="#8a8178"/>
+    <ellipse cx="80" cy="32" rx="5" ry="17" fill="#eac8b6"/>
+  </g>
+  <ellipse cx="60" cy="66" rx="29" ry="34" fill="#9d948a"/>
+  <path d="M50 36 Q60 24 70 36 Q66 46 60 44 Q54 46 50 36Z" fill="#4c463f"/>
+  <ellipse cx="60" cy="90" rx="23" ry="17" fill="#f4eee5"/>
+  <circle cx="47" cy="64" r="5" fill="#2a2622"/>
+  <circle cx="73" cy="64" r="5" fill="#2a2622"/>
+  <circle cx="48.6" cy="62.4" r="1.6" fill="#fff"/>
+  <circle cx="74.6" cy="62.4" r="1.6" fill="#fff"/>
+  <ellipse cx="52" cy="87" rx="2.6" ry="3.6" fill="#b9aa9a"/>
+  <ellipse cx="68" cy="87" rx="2.6" ry="3.6" fill="#b9aa9a"/>
+  <path d="M51 96 Q60 103 69 96" fill="none" stroke="#8a7c6e" stroke-width="2.4" stroke-linecap="round"/>
+</svg>

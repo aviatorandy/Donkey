@@ -27,7 +27,10 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <h1>Donkey</h1>
+        <h1>
+          <img src="/donkey.svg" alt="" width="28" height="28" />
+          Donkey
+        </h1>
         <nav>
           {TABS.map((t) => (
             <button key={t.id} className={!person && view === t.id ? 'tab active' : 'tab'} onClick={() => go(t.id)}>
