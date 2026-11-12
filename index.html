@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Donkey: remember the small things</title>
+    <meta name="description" content="A personal CRM for friends and business contacts. Donkey remembers the details, tells you who you are overdue to talk to, and drafts the message." />
+  </head>
+  <body>
+    <header class="top">
+      <strong class="logo">Donkey</strong>
+      <a href="/app/">Try the demo</a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <h1>Remember the small things about everyone you know.</h1>
+          <p class="lede">
+            One place for friends and business contacts. Donkey keeps the details, tells you who you are overdue to talk to, and drafts the message.
+          </p>
+          <form id="signup">
+            <input type="email" name="email" placeholder="you@example.com" aria-label="Email address" required />
+            <button type="submit">Get early access</button>
+          </form>
+          <p id="signup-status" class="status" role="status"></p>
+        </div>
+        <div class="preview" aria-hidden="true">
+          <div class="pcard">
+            <div class="prow"><b>Maya Chen</b><span class="ppill">Birthday in 5 days</span></div>
+            <p class="pmuted">Remember: training for her first marathon · daughter Lily started kindergarten</p>
+            <p class="pdraft">Happy birthday, Maya! How's the marathon training going?</p>
+            <div class="prow start"><span class="pbtn">iMessage</span><span class="pbtn">WhatsApp</span></div>
+          </div>
+          <div class="pcard">
+            <div class="prow"><b>Priya Natarajan</b><span class="ppill red">80 days since last contact</span></div>
+            <p class="pmuted">Remember: prefers coffee over lunch · hiring a chief of staff</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="features">
+        <div>
+          <h3>Remember</h3>
+          <p>Kids' names, what they are working on, how they take their coffee. Searchable, next to every conversation you have logged.</p>
+        </div>
+        <div>
+          <h3>Reach out</h3>
+          <p>Set how often you want to talk to someone. Donkey surfaces who is overdue and whose birthday is coming, with a draft ready to send.</p>
+        </div>
+        <div>
+          <h3>See your network</h3>
+          <p>Bring in your phone contacts, LinkedIn, WhatsApp, and iMessage history. Browse by company, client, or chapter of your career.</p>
+        </div>
+      </section>
+
+      <section class="why">
+        <h2>Why a donkey?</h2>
+        <p>
+          Donkeys are the most underrated animal in the barn. They bond for life, they are said to recognize a friend after decades apart, and the famous stubbornness is really good judgment.
+        </p>
+        <p>Also, staying in touch is donkey work. Let Donkey do it.</p>
+      </section>
+
+      <section class="trust">
+        <p>Your contacts stay on your device. Messages are drafted for you and never sent without your tap.</p>
+      </section>
+    </main>
+    <script type="module" src="/src/landing.ts"></script>
+  </body>
+</html>
