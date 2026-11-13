@@ -113,3 +113,11 @@ button:disabled { opacity: 0.5; cursor: default; }
   header nav { width: 100%; flex-wrap: nowrap; justify-content: space-between; overflow-x: auto; }
   header nav .tab { padding: 7px 9px; }
 }
+
+.quiet { background: transparent; border-color: transparent; color: var(--muted); }
+.quiet:hover { border-color: var(--line); }
+.composer { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border-radius: 99px; padding: 4px 12px; font-size: 13px; color: var(--muted); }
+.chip.on { background: #e3efe8; border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.btn.primary { color: var(--accent-text); }

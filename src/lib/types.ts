@@ -17,6 +17,8 @@ export interface Person {
   /** MM-DD or YYYY-MM-DD */
   birthday?: string
   tier?: Tier
+  /** Hide nudges for this person until this date (YYYY-MM-DD). */
+  snoozeUntil?: string
   /** Other dates worth remembering: anniversaries, kids' birthdays. Dates are MM-DD. */
   dates?: { label: string; date: string }[]
   /** Target days between touchpoints. Unset means no nudges. */
@@ -46,10 +48,19 @@ export interface Reminder {
   done: boolean
 }
 
+/** A reusable message. `{name}` is replaced with the person's first name. */
+export interface MessageTemplate {
+  id: string
+  label: string
+  text: string
+}
+
 export interface Db {
   people: Person[]
   interactions: Interaction[]
   reminders: Reminder[]
+  /** Templates the user saved, shown after the built-in ones. */
+  templates?: MessageTemplate[]
   /** True while the app is showing sample data, not the user's own. */
   sample?: boolean
 }

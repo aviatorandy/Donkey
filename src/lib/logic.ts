@@ -1,4 +1,4 @@
-import type { Db, Interaction, Person, Tier } from './types'
+import type { Db, Interaction, MessageTemplate, Person, Tier } from './types'
 
 export const pad = (n: number) => String(n).padStart(2, '0')
 export const ymd = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
@@ -61,6 +61,8 @@ export interface Suggestion {
   kind: 'birthday' | 'date' | 'catch-up'
   /** For kind 'date': what the date is. */
   label?: string
+  /** For birthdays and dates: days until it happens. */
+  inDays?: number
   reason: string
   /** Higher sorts first. */
   score: number
@@ -70,6 +72,7 @@ export function suggestions(db: Db, now: string): Suggestion[] {
   const last = lastContactMap(db)
   const out: Suggestion[] = []
   for (const p of db.people) {
+    if (p.snoozeUntil && p.snoozeUntil > now) continue
     const events = [...(p.birthday ? [{ label: 'Birthday', date: p.birthday }] : []), ...(p.dates ?? [])]
     let soon: { label: string; d: number } | undefined
     for (const e of events) {
@@ -81,6 +84,7 @@ export function suggestions(db: Db, now: string): Suggestion[] {
         person: p,
         kind: soon.label === 'Birthday' ? 'birthday' : 'date',
         label: soon.label,
+        inDays: soon.d,
         reason: soon.d === 0 ? `${soon.label} today` : `${soon.label} in ${soon.d} day${soon.d === 1 ? '' : 's'}`,
         score: 1000 - soon.d,
       })
@@ -104,14 +108,27 @@ export function suggestions(db: Db, now: string): Suggestion[] {
   return out.sort((a, b) => b.score - a.score)
 }
 
-export function draftMessage(s: Suggestion): string {
-  const name = firstName(s.person)
-  if (s.kind === 'birthday') return `Happy birthday, ${name}! Hope it's a great one.`
-  if (s.kind === 'date') return `Hey ${name}, thinking of you with ${(s.label ?? 'the big day').toLowerCase()} coming up.`
-  return s.person.circle === 'business' || s.person.circle === 'client'
-    ? `Hi ${name}, it's been a while. Would love to hear what you're working on. Up for a quick catch-up?`
-    : `Hey ${name}! It's been too long. How have you been?`
+const isWork = (p: Person) => p.circle === 'business' || p.circle === 'client'
+
+/** Templates offered for a nudge, best match first, then the user's own. */
+export function templatesFor(s: Suggestion, custom: MessageTemplate[] = []): MessageTemplate[] {
+  const out: MessageTemplate[] = []
+  if (s.kind === 'birthday') out.push({ id: 'birthday', label: 'Birthday', text: "Happy birthday, {name}! Hope it's a great one." })
+  if (s.kind === 'date')
+    out.push({ id: 'date', label: s.label ?? 'Big day', text: `Hey {name}, thinking of you with ${(s.label ?? 'the big day').toLowerCase()} coming up.` })
+  out.push(
+    isWork(s.person)
+      ? { id: 'checkin', label: 'Check in', text: "Hi {name}, it's been a while. Would love to hear what you're working on. Up for a quick catch-up?" }
+      : { id: 'checkin', label: 'Check in', text: "Hey {name}! It's been too long. How have you been?" },
+    { id: 'coffee', label: 'Coffee?', text: 'Hi {name}, I would love to catch up properly. Free for a coffee or a call in the next couple of weeks?' },
+    { id: 'thinking', label: 'Thinking of you', text: "Hey {name}, you crossed my mind today. No need to reply, just hoping you're well." },
+    { id: 'congrats', label: 'Congrats', text: 'Congrats, {name}! Just saw the news. So well deserved.' },
+    ...custom,
+  )
+  return out
 }
+export const fillTemplate = (t: MessageTemplate, p: Person) => t.text.replaceAll('{name}', firstName(p))
+export const draftMessage = (s: Suggestion) => fillTemplate(templatesFor(s)[0], s.person)
 
 export function sendLinks(p: Person, text: string): { label: string; href: string }[] {
   const enc = encodeURIComponent(text)

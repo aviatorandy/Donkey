@@ -156,3 +156,22 @@ describe('tiers', () => {
     expect(s[0].person.name).toBe('B')
   })
 })
+
+import { fillTemplate, templatesFor } from '../src/lib/logic'
+
+describe('messages', () => {
+  const base: Db = { people: [], interactions: [], reminders: [] }
+  it('offers the matching template first, then general ones, then saved ones', () => {
+    const p = person({ birthday: '12-03', circle: 'client' })
+    const [s] = suggestions({ ...base, people: [p] }, '2024-12-01')
+    const t = templatesFor(s, [{ id: 'mine', label: 'Mine', text: 'Yo {name}' }])
+    expect(t.map((x) => x.id)).toEqual(['birthday', 'checkin', 'coffee', 'thinking', 'congrats', 'mine'])
+    expect(fillTemplate(t[0], p)).toBe("Happy birthday, Maya! Hope it's a great one.")
+    expect(fillTemplate(t[5], p)).toBe('Yo Maya')
+  })
+  it('hides a snoozed person until the snooze ends', () => {
+    const p = person({ cadenceDays: 30, snoozeUntil: '2024-12-05' })
+    expect(suggestions({ ...base, people: [p] }, '2024-12-01')).toHaveLength(0)
+    expect(suggestions({ ...base, people: [p] }, '2024-12-05')).toHaveLength(1)
+  })
+})

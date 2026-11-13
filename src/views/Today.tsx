@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useDb, update, uid } from '../lib/store'
-import { addDays, daysBetween, draftMessage, sendLinks, suggestions, tierHealth, today, type Suggestion } from '../lib/logic'
+import { addDays, daysBetween, fillTemplate, firstName, sendLinks, suggestions, templatesFor, tierHealth, today, type Suggestion } from '../lib/logic'
 import type { Channel } from '../lib/types'
 
 const CHANNEL_FOR: Record<string, Channel> = { iMessage: 'imessage', WhatsApp: 'whatsapp', LinkedIn: 'linkedin', Email: 'email' }
@@ -13,9 +13,34 @@ export function logContact(personId: string, channel: Channel, note: string) {
 }
 
 function SuggestionCard({ s, open }: { s: Suggestion; open: (id: string) => void }) {
-  const [text, setText] = useState(() => draftMessage(s))
+  const db = useDb()
   const p = s.person
+  const templates = templatesFor(s, db.templates)
+  const [composing, setComposing] = useState(false)
+  const [picked, setPicked] = useState(templates[0].id)
+  const [text, setText] = useState(() => fillTemplate(templates[0], p))
   const links = sendLinks(p, text)
+
+  // A catch-up nudge clears once contact is logged. A date nudge is hidden until the date has passed.
+  const clear = (channel: Channel | null, note: string) =>
+    update((d) => ({
+      ...d,
+      interactions: channel ? [...d.interactions, { id: uid(), personId: p.id, date: today(), channel, note }] : d.interactions,
+      people: s.inDays === undefined ? d.people : d.people.map((x) => (x.id === p.id ? { ...x, snoozeUntil: addDays(today(), s.inDays! + 1) } : x)),
+    }))
+  const later = () => update((d) => ({ ...d, people: d.people.map((x) => (x.id === p.id ? { ...x, snoozeUntil: addDays(today(), 7) } : x)) }))
+  const send = (label: string) => {
+    // LinkedIn cannot be pre-filled, so the draft goes to the clipboard to paste.
+    if (label === 'LinkedIn') navigator.clipboard?.writeText(text).catch(() => {})
+    clear(CHANNEL_FOR[label] ?? 'other', `Sent: ${text}`)
+  }
+  const saveTemplate = () => {
+    const label = prompt('Name this template')?.trim()
+    if (!label) return
+    const reusable = text.split(firstName(p)).join('{name}')
+    update((d) => ({ ...d, templates: [...(d.templates ?? []), { id: uid(), label, text: reusable }] }))
+  }
+
   return (
     <div className="card">
       <div className="row between">
@@ -25,23 +50,50 @@ function SuggestionCard({ s, open }: { s: Suggestion; open: (id: string) => void
         <span className={`pill ${s.kind === 'catch-up' ? 'overdue' : 'due'}`}>{s.reason}</span>
       </div>
       {p.facts.length > 0 && <p className="muted">Remember: {p.facts.slice(0, 2).join(' · ')}</p>}
-      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} aria-label={`Draft message to ${p.name}`} />
-      <div className="row">
-        {links.map((l) => (
-          <a
-            key={l.label}
-            className="btn"
-            href={l.href}
-            target="_blank"
-            rel="noreferrer"
-            onClick={() => logContact(p.id, CHANNEL_FOR[l.label] ?? 'other', `Sent: ${text}`)}
-          >
-            {l.label}
-          </a>
-        ))}
-        <button onClick={() => logContact(p.id, 'other', 'Caught up')}>Mark as done</button>
-        {links.length === 0 && <span className="muted">Add a phone, email, or LinkedIn URL to send from here.</span>}
-      </div>
+
+      {!composing ? (
+        <div className="row">
+          <button className="primary" onClick={() => setComposing(true)}>
+            Message
+          </button>
+          <button onClick={() => clear('other', 'Caught up')}>Done</button>
+          <button className="quiet" onClick={later}>
+            Later
+          </button>
+        </div>
+      ) : (
+        <div className="composer">
+          <div className="chips">
+            {templates.map((t) => (
+              <button
+                key={t.id}
+                className={picked === t.id ? 'chip on' : 'chip'}
+                onClick={() => {
+                  setPicked(t.id)
+                  setText(fillTemplate(t, p))
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} aria-label={`Message to ${p.name}`} />
+          <div className="row">
+            {links.map((l, i) => (
+              <a key={l.label} className={i === 0 ? 'btn primary' : 'btn'} href={l.href} target="_blank" rel="noreferrer" onClick={() => send(l.label)}>
+                {i === 0 ? `Send with ${l.label}` : l.label}
+              </a>
+            ))}
+            {links.length === 0 && <span className="muted">Add a phone, email, or LinkedIn URL to send from here.</span>}
+            <button className="quiet" onClick={() => setComposing(false)}>
+              Cancel
+            </button>
+            <button className="quiet right" onClick={saveTemplate}>
+              Save as template
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
