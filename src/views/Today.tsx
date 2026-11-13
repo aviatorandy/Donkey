@@ -46,6 +46,11 @@ function SuggestionCard({ s, open }: { s: Suggestion; open: (id: string) => void
   )
 }
 
+function greeting() {
+  const h = new Date().getHours()
+  return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'
+}
+
 function QuickCapture() {
   const db = useDb()
   const [who, setWho] = useState('')
@@ -110,6 +115,9 @@ export default function Today({ open, goSort }: { open: (id: string) => void; go
 
   return (
     <>
+      <p className="greet">
+        {greeting()}. {sugg.length === 0 ? "You're all caught up." : `${sugg.length} ${sugg.length === 1 ? 'person' : 'people'} to reach out to.`}
+      </p>
       <div className="health">
         {health.map((h) => (
           <div key={h.tier} className="card stat">

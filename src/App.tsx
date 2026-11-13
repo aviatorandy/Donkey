@@ -32,8 +32,10 @@ export default function App() {
     <div className="app">
       <header>
         <h1>
-          <img src="/donkey.svg" alt="" width="28" height="28" />
-          Donkey
+          <a href="/" title="Back to the Donkey home page">
+            <img src="/donkey.svg" alt="" width="30" height="30" />
+            Donkey
+          </a>
         </h1>
         <nav>
           {TABS.map((t) => (
