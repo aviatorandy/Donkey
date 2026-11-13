@@ -73,7 +73,7 @@ function QuickCapture() {
             <option key={p.id} value={p.name} />
           ))}
         </datalist>
-        <input className="grow" placeholder="Just talked? Jot what you learned" value={note} onChange={(e) => setNote(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && save(true)} aria-label="Note" />
+        <input className="grow" placeholder="What did you learn?" value={note} onChange={(e) => setNote(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && save(true)} aria-label="Note" />
       </div>
       <div className="row">
         <button className="primary" disabled={!person || !note.trim()} onClick={() => save(true)}>

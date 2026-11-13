@@ -50,6 +50,8 @@ export interface Db {
   people: Person[]
   interactions: Interaction[]
   reminders: Reminder[]
+  /** True while the app is showing sample data, not the user's own. */
+  sample?: boolean
 }
 
 export const emptyDb: Db = { people: [], interactions: [], reminders: [] }

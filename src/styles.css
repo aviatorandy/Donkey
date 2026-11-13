@@ -112,3 +112,4 @@ pre { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; 
 button:disabled { opacity: 0.5; cursor: default; }
 .tiers { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
 .tiers .primary { font-weight: 600; }
+.banner { border-color: var(--accent); }

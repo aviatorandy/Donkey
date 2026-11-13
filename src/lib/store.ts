@@ -11,7 +11,8 @@ function load(): Db {
   } catch {
     /* storage unavailable or corrupt: start empty */
   }
-  return emptyDb
+  // First visit: show sample data so nobody lands on a blank screen. A banner offers a clean start.
+  return sampleDb()
 }
 
 let state: Db = load()
@@ -46,6 +47,7 @@ export function sampleDb(): Db {
     ...rest,
   })
   return {
+    sample: true,
     people: [
       p('s1', { tier: 'warm', name: 'Maya Chen', circle: 'friend', context: 'College', phone: '+14155550101', cadenceDays: 30, birthday: bday, facts: ['Training for her first marathon', 'Daughter Lily started kindergarten'] }),
       p('s2', { tier: 'warm', name: 'Jordan Reyes', circle: 'friend', context: 'College', phone: '+14155550102', cadenceDays: 45, facts: ['Just moved to Austin', 'Allergic to shellfish'] }),

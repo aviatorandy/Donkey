@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useDb, update, sampleDb } from './lib/store'
+import { emptyDb } from './lib/types'
 import Today from './views/Today'
 import People from './views/People'
 import PersonDetail from './views/PersonDetail'
@@ -44,6 +45,20 @@ export default function App() {
         </nav>
       </header>
       <main>
+        {db.sample && (
+          <div className="card row between banner">
+            <span>You are looking at sample data.</span>
+            <button
+              className="primary"
+              onClick={() => {
+                update(() => emptyDb)
+                go('import')
+              }}
+            >
+              Start with my own contacts
+            </button>
+          </div>
+        )}
         {person ? (
           <PersonDetail person={person} onBack={() => setPersonId(null)} />
         ) : db.people.length === 0 && view !== 'import' ? (

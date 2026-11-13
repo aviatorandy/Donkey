@@ -66,6 +66,7 @@ export default function PersonDetail({ person: p, onBack }: { person: Person; on
   const remove = () => {
     if (!confirm(`Delete ${p.name} and their history?`)) return
     update((d) => ({
+      ...d,
       people: d.people.filter((x) => x.id !== p.id),
       interactions: d.interactions.filter((x) => x.personId !== p.id),
       reminders: d.reminders.filter((x) => x.personId !== p.id),
